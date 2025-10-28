@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: braindrainai
+  labels:
+    app: braindrainai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: braindrainai
+  template:
+    metadata:
+      labels:
+        app: braindrainai
+    spec:
+      containers:
+        - name: app
+          # Replace with your built image, e.g., ghcr.io/aishvarya-pec/braindrain:latest
+          image: your-registry/braindrain:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8501
+          env:
+            - name: PORT
+              value: "8501"
+            - name: FIREWORKS_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: braindrain-config
+                  key: FIREWORKS_BASE_URL
+            - name: FIREWORKS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: braindrain-secrets
+                  key: FIREWORKS_API_KEY
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8501
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8501
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1
+              memory: 1Gi
