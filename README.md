@@ -1,6 +1,6 @@
 # BrainDrainAI — AI Study Assistant
 
-![Framework](https://img.shields.io/badge/Framework-Streamlit-red?logo=streamlit)  ![Language](https://img.shields.io/badge/Language-Python-yellow?logo=python)  ![Status]https://braindrainai.streamlit.app/
+![Framework](https://img.shields.io/badge/Framework-Streamlit-red?logo=streamlit)  ![Language](https://img.shields.io/badge/Language-Python-yellow?logo=python)  ![Status](https://img.shields.io/badge/Status-Ready%20to%20Deploy-brightgreen)
 
 BrainDrainAI helps you study faster with three focused modes: Solver, Notes Generator, and Quizzer — all in a clean Streamlit UI.
 
