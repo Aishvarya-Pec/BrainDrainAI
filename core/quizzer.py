@@ -2,6 +2,7 @@ from utils.fireworks_helper import generate_response, stream_response
 from utils.fireworks_helper import generate_response_with_model, stream_response_with_model
 import json
 import re
+import random
 QUIZ_MODEL = "accounts/fireworks/models/qwen3-8b"
 
 # --- Sanitizers -------------------------------------------------------------
@@ -10,6 +11,7 @@ def _coerce_answer_index(ans, options, explanation: str | None = None):
     letters = ["A", "B", "C", "D"]
     # Numeric index directly
     if isinstance(ans, int):
+        # Treat provided ints as 0-based; clamp to [0,3]
         return max(0, min(3, ans))
     s = str(ans or "").strip()
     # If empty, try explanation text
@@ -19,11 +21,19 @@ def _coerce_answer_index(ans, options, explanation: str | None = None):
     m_num = re.search(r"(?:option|choice|answer)\s*[:\-]?\s*(\d)", s, re.IGNORECASE)
     if m_num:
         try:
-            return max(0, min(3, int(m_num.group(1))))
+            n = int(m_num.group(1))
+            # Heuristic: model often returns 1-based in text — convert 1..4 -> 0..3
+            if 1 <= n <= 4:
+                return n - 1
+            return max(0, min(3, n))
         except Exception:
             pass
     try:
-        return max(0, min(3, int(s)))
+        n = int(s)
+        # Convert 1-based 1..4 to 0..3 when provided as plain string
+        if 1 <= n <= 4:
+            return n - 1
+        return max(0, min(3, n))
     except ValueError:
         pass
     # Try letter (e.g., "B", "Option C", "Answer: A")
@@ -52,8 +62,8 @@ def _coerce_answer_index(ans, options, explanation: str | None = None):
         for i, o in enumerate(options[:4]):
             if _norm(o) and _norm(o) in exp_norm:
                 return i
-    # Fallback: avoid biasing to 0 if unknown — choose 1 by default
-    return 1
+    # Fallback: default to first option (index 0) to avoid confusion
+    return 0
 
 
 def _sanitize_quiz_dict(data: dict) -> dict:
@@ -348,5 +358,23 @@ def create_quiz_json(topic_or_text: str, difficulty: str = "easy", num_questions
             cleaned.append(q)
             seen.add(key)
 
+    # Randomize option order per question while preserving the correct index
+    def _shuffle_question(q: dict) -> dict:
+        opts = q.get("options", [])[:4]
+        ans = int(q.get("answer_index", 0))
+        # Pair original indices with options and shuffle
+        pairs = list(enumerate(opts))
+        random.shuffle(pairs)
+        new_opts = [o for (_, o) in pairs]
+        # Find new index of the originally correct option
+        new_ans = next((i for i, (orig_idx, _) in enumerate(pairs) if orig_idx == ans), 0)
+        return {
+            "question": q.get("question", ""),
+            "options": new_opts,
+            "answer_index": new_ans,
+            "explanation": q.get("explanation", ""),
+        }
+
     final = cleaned[:num_questions]
+    final = [_shuffle_question(q) for q in final]
     return {"quiz": final}
