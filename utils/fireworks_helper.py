@@ -5,18 +5,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from fireworks.client import Fireworks
+from openai import OpenAI
 
-FIREWORKS_BASE_URL = os.getenv("FIREWORKS_BASE_URL", "https://api.fireworks.ai/inference")
-
-PREFERRED_MODEL = os.getenv("FIREWORKS_PREFERRED_MODEL", "accounts/fireworks/models/deepseek-v4-pro")
+FIREWORKS_BASE_URL = os.getenv("FIREWORKS_BASE_URL", "https://api.fireworks.ai/inference/v1")
 
 SYSTEM_PROMPT = (
     "You are BrainDrainAI, an AI study assistant. "
     "Respond concisely, clearly, and never mention any other product names."
 )
 
-_client: Fireworks | None = None
+_client: OpenAI | None = None
 
 
 def _get_api_key() -> str:
@@ -31,14 +29,14 @@ def _get_api_key() -> str:
         return ""
 
 
-def _get_client() -> Fireworks:
+def _get_client() -> OpenAI:
     global _client
     if _client is not None:
         return _client
     api_key = _get_api_key()
     if not api_key:
         raise RuntimeError("FIREWORKS_API_KEY not configured. Add it to your .env or Streamlit secrets.")
-    _client = Fireworks(api_key=api_key, base_url=FIREWORKS_BASE_URL)
+    _client = OpenAI(api_key=api_key, base_url=FIREWORKS_BASE_URL)
     return _client
 
 
