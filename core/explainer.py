@@ -1,7 +1,8 @@
-from utils.fireworks_helper import generate_response, stream_response
+from utils.fireworks_helper import generate_text, stream_text
+
 
 def explain_concept(concept: str) -> str:
-    """Explain a concept in simple terms, detect irrelevant instructions."""
+    """Explain a concept in simple terms."""
     prompt = f"""
 You are a helpful Study Assistant. Your job is to explain academic concepts clearly.
 
@@ -13,7 +14,7 @@ gently respond with: "It looks like you might want to use the Quizzer or Summari
 
 Topic: {concept}
 """
-    return generate_response(prompt.strip())
+    return generate_text("accounts/fireworks/models/deepseek-v4-pro", prompt.strip())
 
 
 def explain_concept_stream(concept: str):
@@ -29,4 +30,4 @@ gently respond with: "It looks like you might want to use the Quizzer or Summari
 
 Topic: {concept}
 """
-    return stream_response(prompt.strip())
+    return stream_text("accounts/fireworks/models/deepseek-v4-pro", prompt.strip())

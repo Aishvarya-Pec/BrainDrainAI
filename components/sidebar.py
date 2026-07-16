@@ -78,9 +78,9 @@ def sidebar_ui():
             <div class="bd-howworks">
               <h4>How it works</h4>
               <ul>
-                <li><strong>Solver</strong> — DeepSeek V3.1: step-by-step solutions for math, code, and structured reasoning.</li>
-                <li><strong>Notes Generator</strong> — Mixtral 8x22B Instruct: generates extremely detailed long-form study notes with rich sections.</li>
-                <li><strong>Quizzer</strong> — Qwen3 8B: generates MCQs and tracks your score.</li>
+                <li><strong>Solver</strong> — DeepSeek V4 Pro: step-by-step solutions for math, code, and structured reasoning.</li>
+                <li><strong>Notes Generator</strong> — GPT-OSS 120B: generates extremely detailed long-form study notes with rich sections.</li>
+                <li><strong>Quizzer</strong> — Kimi K2 6B: generates MCQs and tracks your score.</li>
               </ul>
               <p class="bd-muted">Components inside modes: Chat input, optional PDF upload (context), and controls like question count.</p>
             </div>
@@ -107,9 +107,9 @@ def sidebar_ui():
     # Friendly model display by mode (no full ID)
     st.sidebar.markdown("<div class='bd-section-title'>🤖 Model</div>", unsafe_allow_html=True)
     MODELS_BY_MODE = {
-        "Solver": ("DeepSeek V3.1", "accounts/fireworks/models/deepseek-v3p1"),
-        "Notes Generator": ("Mixtral 8x22B Instruct", "accounts/fireworks/models/mixtral-8x22b-instruct"),
-        "Quizzer": ("Qwen3 8B", "accounts/fireworks/models/qwen3-8b"),
+        "Solver": ("DeepSeek V4 Pro", "accounts/fireworks/models/deepseek-v4-pro"),
+        "Notes Generator": ("GPT-OSS 120B", "accounts/fireworks/models/gpt-oss-120b"),
+        "Quizzer": ("Kimi K2 6B", "accounts/fireworks/models/kimi-k2p6"),
     }
     model_name, model_id = MODELS_BY_MODE.get(mode, ("Unknown", ""))
     # Store the underlying id for potential future use

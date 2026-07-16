@@ -1,4 +1,5 @@
-from utils.fireworks_helper import generate_response, stream_response
+from utils.fireworks_helper import generate_text, stream_text
+
 
 def summarize_text(text: str) -> str:
     """Summarize long notes or text."""
@@ -15,7 +16,7 @@ Otherwise, summarize it into clear, bullet-point sections:
 
 Text: {text}
 """
-    return generate_response(prompt.strip())
+    return generate_text("accounts/fireworks/models/deepseek-v4-pro", prompt.strip())
 
 
 def summarize_text_stream(text: str):
@@ -33,4 +34,4 @@ Otherwise, summarize it into clear, bullet-point sections:
 
 Text: {text}
 """
-    return stream_response(prompt.strip())
+    return stream_text("accounts/fireworks/models/deepseek-v4-pro", prompt.strip())

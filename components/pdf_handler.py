@@ -1,5 +1,10 @@
+import io
+import re
 import streamlit as st
 from PyPDF2 import PdfReader
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.lib.utils import simpleSplit
 
 
 def handle_pdf_upload(key: str = "pdf_uploader"):
@@ -16,20 +21,9 @@ def handle_pdf_upload(key: str = "pdf_uploader"):
         st.text_area("Extracted Text:", pdf_text[:2000], height=200)
     return pdf_text
 
-# PDF generation from text for notes download
-import io
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from reportlab.lib.utils import simpleSplit
-
 
 def generate_pdf_from_text(text: str, title: str = "BrainDrain Notes") -> bytes:
-    """Generate a multi-page PDF from plain/markdown text and return bytes.
-    Enhancements:
-    - Larger headings for topics and subtopics (markdown-style #, ##, ###).
-    - Proper bullets with indentation for sub-bullets.
-    - Consistent spacing between sections and paragraphs.
-    """
+    """Generate a multi-page PDF from plain/markdown text and return bytes."""
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
@@ -68,14 +62,12 @@ def generate_pdf_from_text(text: str, title: str = "BrainDrain Notes") -> bytes:
     draw_header(page_num)
     c.setFont(base_font, base_size)
 
-    import re
     heading_re = re.compile(r"^(#{1,6})\s+(.*)$")
     bullet_re = re.compile(r"^(\s*)([-*•])\s+(.*)$")
 
     for raw_line in lines:
         line = raw_line.rstrip()
 
-        # Blank line -> small spacing
         if not line.strip():
             y -= 8
             if y <= bottom_margin:
@@ -83,22 +75,12 @@ def generate_pdf_from_text(text: str, title: str = "BrainDrain Notes") -> bytes:
                 y = new_page(page_num)
             continue
 
-        # Heading detection (#, ##, ### ...)
         h_match = heading_re.match(line)
         if h_match:
             hashes, h_text = h_match.groups()
             level = len(hashes)
-            # Larger font sizes for headings
-            if level == 1:
-                size = 26
-            elif level == 2:
-                size = 22
-            elif level == 3:
-                size = 18
-            else:
-                size = 16
+            size = {1: 26, 2: 22, 3: 18}.get(level, 16)
 
-            # Spacing before heading
             y -= 12
             if y <= bottom_margin:
                 page_num += 1
@@ -112,23 +94,19 @@ def generate_pdf_from_text(text: str, title: str = "BrainDrain Notes") -> bytes:
                     c.setFont("Helvetica-Bold", size)
                 c.drawString(left_margin, y, w)
                 y -= (size + 4 if i == 0 else size + 2)
-            # Spacing after heading
             y -= 8
             c.setFont(base_font, base_size)
             continue
 
-        # Bullet detection (-, *, •) with indentation
         b_match = bullet_re.match(line)
         if b_match:
-            indent_spaces, symbol, b_text = b_match.groups()
-            # Compute bullet level by leading spaces (2 spaces per level)
+            indent_spaces, _, b_text = b_match.groups()
             level = min(len(indent_spaces) // 2, 4)
             indent_offset = 22 + (level * 20)
             bullet_x = left_margin + indent_offset - 10
             text_x = left_margin + indent_offset
             max_width = usable_width - indent_offset
 
-            # Wrap bullet text
             wrapped = simpleSplit(b_text, base_font, base_size, max_width)
             for i, w in enumerate(wrapped):
                 if y <= bottom_margin:
@@ -140,11 +118,9 @@ def generate_pdf_from_text(text: str, title: str = "BrainDrain Notes") -> bytes:
                     c.drawString(bullet_x, y, "•")
                 c.drawString(text_x, y, w)
                 y -= line_height
-            # Spacing after a bullet block
             y -= 6
             continue
 
-        # Regular paragraph line
         wrapped = simpleSplit(line, base_font, base_size, usable_width)
         for w in wrapped:
             if y <= bottom_margin:
@@ -153,7 +129,6 @@ def generate_pdf_from_text(text: str, title: str = "BrainDrain Notes") -> bytes:
                 c.setFont(base_font, base_size)
             c.drawString(left_margin, y, w)
             y -= line_height
-        # Paragraph spacing
         y -= 8
 
     c.save()
