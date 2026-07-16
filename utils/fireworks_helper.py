@@ -7,6 +7,8 @@ load_dotenv()
 
 from fireworks.client import Fireworks
 
+FIREWORKS_BASE_URL = os.getenv("FIREWORKS_BASE_URL", "https://api.fireworks.ai/inference")
+
 PREFERRED_MODEL = os.getenv("FIREWORKS_PREFERRED_MODEL", "accounts/fireworks/models/deepseek-v4-pro")
 
 SYSTEM_PROMPT = (
@@ -36,7 +38,7 @@ def _get_client() -> Fireworks:
     api_key = _get_api_key()
     if not api_key:
         raise RuntimeError("FIREWORKS_API_KEY not configured. Add it to your .env or Streamlit secrets.")
-    _client = Fireworks(api_key=api_key)
+    _client = Fireworks(api_key=api_key, base_url=FIREWORKS_BASE_URL)
     return _client
 
 
